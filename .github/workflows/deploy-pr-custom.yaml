@@ -6,10 +6,6 @@ on:
 env:
   FB_IMAGE: fluent-bit:actions-pr-${{ github.event.issue.number }}
   OP_IMAGE: fluentbit-operator:actions-pr-${{ github.event.issue.number }}
-<<<<<<< HEAD
-=======
-  SERVICE_NAME: fluentbit-operator-actions-pr-${{ github.event.issue.number }}
->>>>>>> 1275746 (add deploy custom/default pr action)
 
 jobs:
   push-check:
