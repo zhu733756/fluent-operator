@@ -7,17 +7,24 @@ on:
     tags:
       - 'v*'
     paths:
-      - "cmd/fluent-watcher/**"
+      - ".github/workflows/**"
+      - "apis/**"
+      - "charts/**"
+      - "cmd/fluent-manager/**"
+      - "controllers/**"
+      - "hack/**"
+      - "manifests/setup/setup.yaml"
+      - "pkg/**"
+      - "Makefile"
 
 env:
-  FB_IMG: 'kubesphere/fluent-bit:v1.8.11'
-  FD_IMG: 'kubesphere/fluentd:v1.14.4'
+  REGISTRY_REPO: 'kubesphere'
 
 jobs:
-  build:
+  operator-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    name: Build Image for Fluent Bit and Fluentd
+    name: Build Image for Fluent Operator
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -40,14 +47,11 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Setting Environment Variables
-        run: |
-          echo "tag=$(cat VERSION | tr -d " \t\n\r")" >> $GITHUB_ENV 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
 
-      - name: Build and Push Image for Fluent Bit
+      - name: Build and Push Image for Fluent Operator
         run: |
-          make build-fb-amd64 -e FB_IMG=${{ env.FB_IMG }} && docker push ${{ env.FB_IMG }}
-
-      - name: Build and Push Image for Fluentd
-        run: |
-          make build-fd-amd64 -e FD_IMG=${{ env.FD_IMG }} && docker push ${{ env.FD_IMG }}
+          tag=$(cat VERSION | tr -d " \t\n\r")
+          make build-op -e FO_IMG=${{ env.REGISTRY_REPO }}/fluent-operator:$tag
