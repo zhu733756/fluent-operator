@@ -10,8 +10,8 @@ on:
       - "cmd/fluent-watcher/**"
 
 env:
-  FB_IMG: 'kubesphere/fluent-bit:v1.8.11'
-  FD_IMG: 'kubesphere/fluentd:v1.14.4'
+  FB_IMG: 'zhu733756/fluent-bit:v1.8.11'
+  FD_IMG: 'zhu733756/fluentd:v1.14.4'
 
 jobs:
   build:
@@ -37,8 +37,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Setting Environment Variables
         run: |
