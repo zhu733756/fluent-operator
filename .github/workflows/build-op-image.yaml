@@ -9,7 +9,6 @@ on:
     paths:
       - ".github/workflows/build-op-image.yaml"
       - "apis/**"
-      - "charts/**"
       - "cmd/fluent-manager/**"
       - "controllers/**"
       - "hack/**"
@@ -18,7 +17,7 @@ on:
       - "Makefile"
 
 env:
-  REGISTRY_REPO: 'kubesphere'
+  REGISTRY_REPO: 'zhu733756'
 
 jobs:
   operator-build:
