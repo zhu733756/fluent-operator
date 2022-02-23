@@ -15,16 +15,7 @@ ENV TINI_VERSION=0.18.0
 # Do not split this into multiple RUN!
 # Docker creates a layer for every RUN-Statement
 # therefore an 'apt-get purge' has no effect
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-            ca-certificates \
- && buildDeps=" \
-      make gcc g++ libc-dev \
-      wget bzip2 gnupg dirmngr\
-    " \
- && apt-get install -y --no-install-recommends $buildDeps \
- && echo 'gem: --no-document' >> /etc/gemrc \
- && wget -O /tmp/jemalloc-4.5.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/4.5.0/jemalloc-4.5.0.tar.bz2 \
+RUN wget -O /tmp/jemalloc-4.5.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/4.5.0/jemalloc-4.5.0.tar.bz2 \
  && cd /tmp && tar -xjf jemalloc-4.5.0.tar.bz2 && cd jemalloc-4.5.0/ \
  && ./configure && make \
  && mv lib/libjemalloc.so.2 /usr/lib \
