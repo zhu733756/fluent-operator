@@ -12,13 +12,13 @@ on:
       - "pkg/filenotify/**"
 
 env:
-  FB_IMG: 'kubesphere/fluent-bit:v1.8.11'
+  FB_IMG: 'zhu733756/fluent-bit:v1.8.11'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    name: Build Image for Fluent Bit and Fluentd
+    name: Build Image for Fluent Bit
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -41,6 +41,10 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Build and Push Image for Fluent Bit
         run: |
-          make build-fb-amd64 -e FB_IMG=${{ env.FB_IMG }} && docker push ${{ env.FB_IMG }}
+          make build-fb -e FB_IMG=${{ env.FB_IMG }}
