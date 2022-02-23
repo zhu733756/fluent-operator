@@ -15,7 +15,7 @@ RUN apk add curl --no-cache
 RUN curl -sL -o qemu-6.0.0.balena1-aarch64.tar.gz https://github.com/balena-io/qemu/releases/download/v6.0.0%2Bbalena1/qemu-6.0.0.balena1-aarch64.tar.gz && echo "$QEMU_DOWNLOAD_SHA256 *qemu-6.0.0.balena1-aarch64.tar.gz" | sha256sum -c - | tar zxvf qemu-6.0.0.balena1-aarch64.tar.gz -C . && mv qemu-6.0.0+balena1-aarch64/qemu-aarch64-static .
 
 # Fluentd main image
-FROM arm64v8/ruby:2.7-slim-bullseye
+From fluent/fluentd:v1.14.5-debian-arm64-1.0
 COPY --from=builderqemu /go/qemu-aarch64-static /usr/bin/
 LABEL Description="Fluentd docker image" Vendor="Fluent Organization" Version="1.14.4"
 ENV TINI_VERSION=0.18.0
@@ -23,8 +23,7 @@ ENV TINI_VERSION=0.18.0
 # Do not split this into multiple RUN!
 # Docker creates a layer for every RUN-Statement
 # therefore an 'apt-get purge' has no effect
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
             ca-certificates \
  && buildDeps=" \
       make gcc g++ libc-dev \
@@ -32,11 +31,6 @@ RUN apt-get update \
     " \
  && apt-get install -y --no-install-recommends $buildDeps \
  && echo 'gem: --no-document' >> /etc/gemrc \
- && gem install oj -v 3.10.18 \
- && gem install json -v 2.4.1 \
- && gem install async-http -v 0.54.0 \
- && gem install ext_monitor -v 0.1.2 \
- && gem install fluentd -v 1.14.4 \
  && gem install bigdecimal -v 1.4.4 \
  && gem install resolv -v 0.2.1 \
  && gem install elasticsearch -v 7.13.3 \

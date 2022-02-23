@@ -17,7 +17,7 @@ on:
       - "Makefile"
 
 env:
-  REGISTRY_REPO: 'kubesphere'
+  REGISTRY_REPO: 'zhu733756'
 
 jobs:
   operator-build:
