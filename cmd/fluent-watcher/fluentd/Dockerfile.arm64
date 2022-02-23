@@ -53,7 +53,7 @@ RUN apt-get update \
          fluent-plugin-record-modifier \
          fluent-plugin-multi-format-parser \
          fluent-plugin-aws-elasticsearch-service \
- && echo "plugin installed."
+ && echo "plugin installed." \
  && dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
  && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini-$dpkgArch" \
  && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini-$dpkgArch.asc" \
