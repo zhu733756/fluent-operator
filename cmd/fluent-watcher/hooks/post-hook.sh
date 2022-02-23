@@ -15,4 +15,4 @@ if [ x"${HOST_ARCH}" == x"aarch64" ]; then
 fi
 
 # Enable cross-platform builds https://github.com/multiarch/qemu-user-static
-docker run --rm --privileged multiarch/qemu-user-static:register --reset
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
