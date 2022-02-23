@@ -41,6 +41,10 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Build and Push Image for Fluent Bit
         run: |
-          make build-fb-amd64 -e FB_IMG=${{ env.FB_IMG }} && docker push ${{ env.FB_IMG }}
+          make build-fd -e FB_IMG=${{ env.FB_IMG }}

@@ -40,7 +40,11 @@ jobs:
         with:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
 
       - name: Build and Push Image for Fluentd
         run: |
-          make build-fd-amd64 -e FD_IMG=${{ env.FD_IMG }} && docker push ${{ env.FD_IMG }}
+          make build-fd -e FD_IMG=${{ env.FD_IMG }}
