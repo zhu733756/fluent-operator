@@ -7,27 +7,36 @@ WORKDIR /code
 RUN echo $(ls -al /code)
 RUN CGO_ENABLED=0 go build -i -ldflags '-w -s' -o /fluentd/fluentd-watcher /code/cmd/fluent-watcher/fluentd/main.go
 
+# To set multiarch build for Docker hub automated build.
+FROM golang:alpine AS builderqemu
+WORKDIR /go
+ENV QEMU_DOWNLOAD_SHA256 5db25cccb40ac7b1ca857653b883376b931d91b06ff34ffe70dcf6180bd07bb8
+RUN apk add curl --no-cache
+RUN curl -sL -o qemu-6.0.0.balena1-aarch64.tar.gz https://github.com/balena-io/qemu/releases/download/v6.0.0%2Bbalena1/qemu-6.0.0.balena1-aarch64.tar.gz && echo "$QEMU_DOWNLOAD_SHA256 *qemu-6.0.0.balena1-aarch64.tar.gz" | sha256sum -c - | tar zxvf qemu-6.0.0.balena1-aarch64.tar.gz -C . && mv qemu-6.0.0+balena1-aarch64/qemu-aarch64-static .
+
 # Fluentd main image
-FROM alpine:3.13
-LABEL Description="Fluentd docker image" Vendor="Fluent Organization" Version="1.14.4"
+FROM arm64v8/ruby:2.7-slim-bullseye
+COPY --from=builderqemu /go/qemu-aarch64-static /usr/bin/
+LABEL Description="Fluentd docker image" Vendor="Fluent Organization" Version="1.14.5"
+ENV TINI_VERSION=0.18.0
 
 # Do not split this into multiple RUN!
 # Docker creates a layer for every RUN-Statement
-# therefore an 'apk delete' has no effect
-RUN apk update \
- && apk add --no-cache \
-        ca-certificates \
-        ruby ruby-irb ruby-etc ruby-webrick \
-        tini \
- && apk add --no-cache --virtual .build-deps \
-        build-base linux-headers \
-        ruby-dev gnupg \
+# therefore an 'apt-get purge' has no effect
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+            ca-certificates \
+ && buildDeps=" \
+      make gcc g++ libc-dev \
+      wget bzip2 gnupg dirmngr \
+    " \
+ && apt-get install -y --no-install-recommends $buildDeps \
  && echo 'gem: --no-document' >> /etc/gemrc \
  && gem install oj -v 3.10.18 \
  && gem install json -v 2.4.1 \
  && gem install async-http -v 0.54.0 \
  && gem install ext_monitor -v 0.1.2 \
- && gem install fluentd -v 1.14.4 \
+ && gem install fluentd -v 1.14.5 \
  && gem install bigdecimal -v 1.4.4 \
 # NOTE: resolv v0.2.1 includes the fix for CPU spike issue due to DNS resolver.
 # This hack is needed for Ruby 2.6.7, 2.7.3 and 3.0.1. (alpine image is still kept on 2.7.3)
@@ -46,7 +55,14 @@ RUN apk update \
          fluent-plugin-record-modifier \
          fluent-plugin-multi-format-parser \
          fluent-plugin-aws-elasticsearch-service \
- && apk del .build-deps \
+ && wget -O /tmp/jemalloc-4.5.0.tar.bz2 https://github.com/jemalloc/jemalloc/releases/download/4.5.0/jemalloc-4.5.0.tar.bz2 \
+ && cd /tmp && tar -xjf jemalloc-4.5.0.tar.bz2 && cd jemalloc-4.5.0/ \
+ && ./configure && make \
+ && mv lib/libjemalloc.so.2 /usr/lib \
+ && apt-get purge -y --auto-remove \
+                  -o APT::AutoRemove::RecommendsImportant=false \
+                  $buildDeps \
+ && rm -rf /var/lib/apt/lists/* \
  && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem /usr/lib/ruby/gems/2.*/gems/fluentd-*/test
 
 RUN addgroup -S fluent && adduser -S -G fluent fluent \
@@ -58,11 +74,7 @@ RUN addgroup -S fluent && adduser -S -G fluent fluent \
 
 ENV FLUENTD_CONF="fluent.conf"
 
-ENV LD_PRELOAD=""
-# NOTE: resolv v0.2.1 includes the fix for CPU spike issue due to DNS resolver.
-# Forcing to load specific version of resolv (instead of bundled by default) is needed for Ruby 2.6.7, 2.7.3 and 3.0.1.
-# alpine image is still kept on 2.7.3. See https://pkgs.alpinelinux.org/packages?name=ruby&branch=v3.13
-ENV RUBYLIB="/usr/lib/ruby/gems/2.7.0/gems/resolv-0.2.1/lib"
+ENV LD_PRELOAD="/usr/lib/libjemalloc.so.2"
 EXPOSE 24224 5140
 
 USER fluent
