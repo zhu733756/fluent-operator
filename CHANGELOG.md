@@ -3,7 +3,6 @@
 ### Breaking Changes
 - All Fluent Bit CRDs has been changed from namespaced scope to cluster scope
 - CRDs and controller for Fluentd have been added
-
 ### Features
 - Add priority class to Fluent Bit type (#146) 
 - Add support for Fluent Bit RetryLimit in outputs (#148) 
